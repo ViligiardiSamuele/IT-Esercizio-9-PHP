@@ -1,7 +1,10 @@
 <?php
 $COLORI = array(
-    'Rosso',
-    'Giallo',
-    'Verde',
-    'Blu',
+    'Rosso' => "🔴",
+    'Giallo' => "🟡",
+    'Verde' => "🟢",
+    'Blu' => "🔵"
 );
+
+$black = "⚫";
+$white = "⚪";
