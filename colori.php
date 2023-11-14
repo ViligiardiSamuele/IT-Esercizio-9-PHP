@@ -8,3 +8,4 @@ $COLORI = array(
 
 $black = "⚫";
 $white = "⚪";
+$x = "❌";

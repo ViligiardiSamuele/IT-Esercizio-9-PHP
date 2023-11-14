@@ -52,7 +52,7 @@ echo '
 <body data-bs-theme="dark">';
 echo '<h1 class="text-center">Gioco del MasterMind</h1>';
 echo '<p class="text-center">⚫ = Posizione corretta | ⚪ = Posizione sbagliata | ❌ = Non esiste</p>';
-echo '<div class="card m-2 w-50 mx-auto sfumatura-1">';
+echo '<div class="card m-2 mx-auto sfumatura-1 width">';
 echo '<div class="card-body">';
 echo '<div class="card mb-1">';
 echo '<div class="card-body">';
@@ -107,35 +107,77 @@ if (count($_SESSION["sequenze"]) != 0) {
     echo '<th scope="col">Indicatori</th>';
     echo '</thead>';
     echo '<tbody>';
+
+    $array_indicatori = array();
+    $num_colori = array_count_values($_SESSION["sequenza_random"]);
+    foreach ($_SESSION['sequenze'] as $sequenza) {
+        $copia_num_colori = $num_colori;
+        // -- logica indicatori --
+        $indicatori = array();
+        $copia_sequenza = $sequenza;
+
+        //array con il numero di ogni colore conenuto in sequenza random
+        for ($i = 0; $i < $lunghezza_sequenza; $i++) {
+            if (
+                $COLORI[$sequenza[$i]] == $_SESSION["sequenza_random"][$i]
+                and $copia_num_colori[$COLORI[$sequenza[$i]]] > 0
+            ) {
+                $indicatori[$i] = $black;
+                $copia_num_colori[$COLORI[$sequenza[$i]]]--;
+            } else if ($COLORI[$sequenza[$i]] != $_SESSION["sequenza_random"][$i]
+                and in_array($COLORI[$sequenza[$i]], $_SESSION["sequenza_random"])
+                and $copia_num_colori[$COLORI[$sequenza[$i]]] > 0
+            ) {
+                $indicatori[$i] = $white;
+            } else $indicatori[$i] = $x;
+        }
+        /*
+        //STESSO CONTROLLO MA SU SEQUENZA INVERTITA
+        $sequenza_specchiata = array_reverse($sequenza);
+        $indicatori_sequenza_specchiata = array();
+        for ($i = 0; $i < $lunghezza_sequenza; $i++) {
+            if (
+                $copia_num_colori[$COLORI[$sequenza_specchiata[$i]]] > 0
+                and $COLORI[$sequenza_specchiata[$i]] == $_SESSION["sequenza_random"][$i]
+            ) {
+                $indicatori_sequenza_specchiata[$i] = $black;
+                $copia_num_colori[$COLORI[$sequenza_specchiata[$i]]]--;
+            } else if (
+                $copia_num_colori[$COLORI[$sequenza_specchiata[$i]]] > 0
+                and $COLORI[$sequenza_specchiata[$i]] != $_SESSION["sequenza_random"][$i]
+                and in_array($COLORI[$sequenza_specchiata[$i]], $_SESSION["sequenza_random"])
+            ) {
+                $indicatori_sequenza_specchiata[$i] = $white;
+            } else $indicatori_sequenza_specchiata[$i] = $x;
+        }
+
+        //confronto le X dei due indicatori
+        for ($i = 0; $i < $lunghezza_sequenza; $i++) {
+            if (
+                $indicatori[$i] != $indicatori_sequenza_specchiata[$i]
+                and $indicatori_sequenza_specchiata[$i] == $x
+            )
+                $indicatori[$i] = $x;
+        }
+        */
+        array_push($array_indicatori, $indicatori);
+    }
+
     $count = 0;
     foreach ($_SESSION['sequenze'] as $sequenza) {
-        $count++;
         echo '<tr>';
-        echo '<td scope="row">' . $count . '</td>';
+        echo '<td scope="row">' . ($count + 1) . '</td>';
         foreach ($sequenza as $colore) {
             echo '<td>' . $COLORI[$colore] . '</td>';
         }
-        // -- logica indicatori --
-        $indicatori = array();
-        for ($i = 0; $i < $lunghezza_sequenza; $i++) {
-            //controllo che il colore sia contenuto
-            if (in_array($COLORI[$sequenza[$i]], $_SESSION["sequenza_random"])) {
-                //controllo che il colore sia nella stessa posizione
-                //echo $COLORI[$sequenza[$i]] . ' --- ' . $_SESSION["sequenza_random"][$i];
-                if ($COLORI[$sequenza[$i]] == $_SESSION["sequenza_random"][$i]) {
-                    array_push($indicatori, $black);
-                } else {
-                    array_push($indicatori, $white);
-                }
-            } else array_push($indicatori, '❌');
-        }
         //stampa indicatori
         echo "<td>";
-        foreach ($indicatori as $colore) {
+        foreach ($array_indicatori[$count] as $colore) {
             echo $colore;
         }
         echo "</td>";
         echo '</tr>';
+        $count++;
     }
 }
 if ($end_game || $indovinato) {
