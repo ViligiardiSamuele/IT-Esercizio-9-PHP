@@ -16,15 +16,15 @@ if (!isset($_SESSION["sequenza_random"])) {
         array_push($_SESSION["sequenza_random"], array_values($COLORI)[array_rand(array_keys($COLORI), 1)]);
     }
 }
-/**/
+/*
 echo '<p>Debug: ';
 foreach ($_SESSION['sequenza_random'] as $color) {
     echo $color . ' ';
 }
 echo '</p>';
-
+*/
+//creazione del tentativo
 if (isset($_POST["colore1"])) {
-    //creazione del tentativo
     $sequenza = array();
     for ($i = 0; $i < $lunghezza_sequenza; $i++) {
         array_push($sequenza, $_POST["colore" . ($i + 1)]);
@@ -45,7 +45,7 @@ echo '
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Mastermind</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
     <link rel="stylesheet" href="style.css">
 </head>
@@ -57,7 +57,11 @@ echo '<div class="card-body">';
 echo '<div class="card mb-1">';
 echo '<div class="card-body">';
 if ($indovinato) {
-    echo '<h1>Hai <b>indovinato</b> la sequenza in ' . (count($_SESSION["sequenze"]) + 1) . ' tentativi</h1>';
+    echo '<h1>Hai <b>indovinato</b> la sequenza in ' . (count($_SESSION["sequenze"]) + 1);
+    if ((count($_SESSION["sequenze"]) + 1) > 0)
+        echo ' tentativi';
+    else echo 'tentativo';
+    echo '</h1>';
 } else if (count($_SESSION['sequenze']) >= 10) {
     //tentativi esauriti
     echo '<h1>Hai raggiunto il numero massimo di tentativi</h1>';
@@ -72,7 +76,7 @@ if ($indovinato) {
     echo '</thead>';
     echo '<tbody>';
     echo '<tr>';
-    for ($i = 0; $i < 4; $i++) {
+    for ($i = 0; $i < $lunghezza_sequenza; $i++) {
         echo '<td scope="row">';
         echo '<select required name="colore' . ($i + 1) . '">';
         echo '<option class="option-width" default></option>';
@@ -95,10 +99,9 @@ echo '</div>';
 
 
 //tabella tentativi
-echo '<div class="card">';
-echo '<div class="card-body">';
 if (count($_SESSION["sequenze"]) != 0) {
-
+    echo '<div class="card">';
+    echo '<div class="card-body">';
     echo '<table class="table">';
     echo '<thead>';
     echo '<th scope="col">Num</th>';
@@ -108,15 +111,14 @@ if (count($_SESSION["sequenze"]) != 0) {
     echo '</thead>';
     echo '<tbody>';
 
+    //logica indicatori
     $array_indicatori = array();
     $num_colori = array_count_values($_SESSION["sequenza_random"]);
     foreach ($_SESSION['sequenze'] as $sequenza) {
         $copia_num_colori = $num_colori;
-        // -- logica indicatori --
         $indicatori = array();
         $copia_sequenza = $sequenza;
 
-        //array con il numero di ogni colore conenuto in sequenza random
         for ($i = 0; $i < $lunghezza_sequenza; $i++) {
             if (
                 $COLORI[$sequenza[$i]] == $_SESSION["sequenza_random"][$i]
@@ -124,45 +126,18 @@ if (count($_SESSION["sequenze"]) != 0) {
             ) {
                 $indicatori[$i] = $black;
                 $copia_num_colori[$COLORI[$sequenza[$i]]]--;
-            } else if ($COLORI[$sequenza[$i]] != $_SESSION["sequenza_random"][$i]
+            } else if (
+                $COLORI[$sequenza[$i]] != $_SESSION["sequenza_random"][$i]
                 and in_array($COLORI[$sequenza[$i]], $_SESSION["sequenza_random"])
                 and $copia_num_colori[$COLORI[$sequenza[$i]]] > 0
             ) {
                 $indicatori[$i] = $white;
             } else $indicatori[$i] = $x;
         }
-        /*
-        //STESSO CONTROLLO MA SU SEQUENZA INVERTITA
-        $sequenza_specchiata = array_reverse($sequenza);
-        $indicatori_sequenza_specchiata = array();
-        for ($i = 0; $i < $lunghezza_sequenza; $i++) {
-            if (
-                $copia_num_colori[$COLORI[$sequenza_specchiata[$i]]] > 0
-                and $COLORI[$sequenza_specchiata[$i]] == $_SESSION["sequenza_random"][$i]
-            ) {
-                $indicatori_sequenza_specchiata[$i] = $black;
-                $copia_num_colori[$COLORI[$sequenza_specchiata[$i]]]--;
-            } else if (
-                $copia_num_colori[$COLORI[$sequenza_specchiata[$i]]] > 0
-                and $COLORI[$sequenza_specchiata[$i]] != $_SESSION["sequenza_random"][$i]
-                and in_array($COLORI[$sequenza_specchiata[$i]], $_SESSION["sequenza_random"])
-            ) {
-                $indicatori_sequenza_specchiata[$i] = $white;
-            } else $indicatori_sequenza_specchiata[$i] = $x;
-        }
-
-        //confronto le X dei due indicatori
-        for ($i = 0; $i < $lunghezza_sequenza; $i++) {
-            if (
-                $indicatori[$i] != $indicatori_sequenza_specchiata[$i]
-                and $indicatori_sequenza_specchiata[$i] == $x
-            )
-                $indicatori[$i] = $x;
-        }
-        */
         array_push($array_indicatori, $indicatori);
     }
 
+    //stampa indicatori
     $count = 0;
     foreach ($_SESSION['sequenze'] as $sequenza) {
         echo '<tr>';
@@ -170,7 +145,6 @@ if (count($_SESSION["sequenze"]) != 0) {
         foreach ($sequenza as $colore) {
             echo '<td>' . $COLORI[$colore] . '</td>';
         }
-        //stampa indicatori
         echo "<td>";
         foreach ($array_indicatori[$count] as $colore) {
             echo $colore;
@@ -179,13 +153,14 @@ if (count($_SESSION["sequenze"]) != 0) {
         echo '</tr>';
         $count++;
     }
+
+    echo '</div>';
+    echo '</div>';
 }
 if ($end_game || $indovinato) {
     session_destroy();
     echo '<a class="btn btn-primary text-center" href="index.php" role="button">Inizia una nuova partita</a>';
 }
-echo '</div>';
-echo '</div>';
 echo '</div>';
 echo '</div>';
 
